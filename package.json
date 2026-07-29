@@ -8,7 +8,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "rm -rf dist && cd ../frontend/ && npm run build && cp -r dist ../backend",
+    "deploy": "railway deploy",
+    "deploy:full": "npm run build:ui && npm run deploy",
+    "logs:prod": "railway logs"
   },
   "dependencies": {
     "cors": "^2.8.6",
