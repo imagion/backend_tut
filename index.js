@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 
@@ -6,6 +7,27 @@ const app = express();
 app.use(express.static('dist'));
 
 app.use(express.json());
+
+const password = process.argv[2];
+const url = `mongodb+srv://admin:${password}@cluster0.tn3yujq.mongodb.net`;
+
+mongoose.set('strictQuery', false);
+mongoose.connect(url, { family: 4 });
+
+const noteSchema = new mongoose.Schema({
+  content: String,
+  important: Boolean,
+});
+
+noteSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+});
+
+const Note = mongoose.model('Note', noteSchema);
 
 morgan.token('data', function (req, res) {
   if (req.method === 'POST') {
@@ -71,8 +93,14 @@ app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>');
 });
 
+// app.get('/api/notes', (request, response) => {
+//   response.json(notes);
+// });
+
 app.get('/api/notes', (request, response) => {
-  response.json(notes);
+  Note.find({}).then((notes) => {
+    response.json(notes);
+  });
 });
 
 app.get('/api/persons', (request, response) => {
