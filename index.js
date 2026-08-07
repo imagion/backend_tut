@@ -1,5 +1,6 @@
+require('dotenv').config();
+const Note = require('./models/note');
 const express = require('express');
-const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cors = require('cors');
 
@@ -7,27 +8,6 @@ const app = express();
 app.use(express.static('dist'));
 
 app.use(express.json());
-
-const password = process.argv[2];
-const url = `mongodb+srv://admin:${password}@cluster0.tn3yujq.mongodb.net`;
-
-mongoose.set('strictQuery', false);
-mongoose.connect(url, { family: 4 });
-
-const noteSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
-});
-
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  },
-});
-
-const Note = mongoose.model('Note', noteSchema);
 
 morgan.token('data', function (req, res) {
   if (req.method === 'POST') {
@@ -92,10 +72,6 @@ let persons = [
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>');
 });
-
-// app.get('/api/notes', (request, response) => {
-//   response.json(notes);
-// });
 
 app.get('/api/notes', (request, response) => {
   Note.find({}).then((notes) => {
@@ -213,7 +189,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
