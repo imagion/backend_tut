@@ -46,29 +46,6 @@ let notes = [
   },
 ];
 
-let persons = [
-  {
-    id: '1',
-    name: 'Arto Hellas',
-    number: '040-123456',
-  },
-  {
-    id: '2',
-    name: 'Ada Lovelace',
-    number: '39-44-5323523',
-  },
-  {
-    id: '3',
-    name: 'Dan Abramov',
-    number: '12-43-234345',
-  },
-  {
-    id: '4',
-    name: 'Mary Poppendieck',
-    number: '39-23-6423122',
-  },
-];
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>');
 });
@@ -79,36 +56,10 @@ app.get('/api/notes', (request, response) => {
   });
 });
 
-app.get('/api/persons', (request, response) => {
-  response.json(persons);
-});
-
-app.get('/info', (request, response) => {
-  response.send(
-    `phonebook has info for ${persons.length} people <br><br> ${Date()}`,
-  );
-});
-
 app.get('/api/notes/:id', (request, response) => {
-  const id = request.params.id;
-  const note = notes.find((note) => note.id === id);
-
-  if (note) {
+  Note.findById(request.params.id).then((note) => {
     response.json(note);
-  } else {
-    response.status(404).end();
-  }
-});
-
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id;
-  const person = persons.find((person) => person.id === id);
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  });
 });
 
 app.delete('/api/notes/:id', (request, response) => {
@@ -117,20 +68,6 @@ app.delete('/api/notes/:id', (request, response) => {
 
   response.status(204).end();
 });
-
-app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id;
-  persons = persons.filter((person) => person.id !== id);
-
-  response.status(204).end();
-});
-
-// Math.max returns the maximum value of id numbers that are passed to array
-const generateId = () => {
-  const maxId =
-    notes.length > 0 ? Math.max(...notes.map((n) => Number(n.id))) : 0;
-  return String(maxId + 1);
-};
 
 app.post('/api/notes', (request, response) => {
   const body = request.body;
@@ -144,43 +81,11 @@ app.post('/api/notes', (request, response) => {
   const note = {
     content: body.content,
     important: body.important || false,
-    id: generateId(),
   };
 
-  notes = notes.concat(note);
-
-  response.json(note);
-});
-
-const generateId2 = () => {
-  return persons.length > 0 ? Math.random() * 999999 : 0;
-};
-
-app.post('/api/persons', (request, response) => {
-  const body = request.body;
-
-  if (!body.name | !body.number) {
-    return response.status(400).json({
-      error: 'name or number missing',
-    });
-  }
-
-  const existingPerson = persons.find((person) => person.name === body.name);
-  if (existingPerson) {
-    return response.status(400).json({
-      error: 'name must be unique',
-    });
-  }
-
-  const person = {
-    id: generateId2(),
-    name: body.name,
-    number: body.number,
-  };
-
-  persons = persons.concat(person);
-
-  response.json(person);
+  note.save().then((savedNote) => {
+    response.json(savedNote);
+  });
 });
 
 const unknownEndpoint = (request, response) => {
