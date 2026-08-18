@@ -14,21 +14,15 @@ mongoose.set('strictQuery', false);
 mongoose.connect(url, { family: 4 });
 
 const noteSchema = new mongoose.Schema({
-  content: String,
+  content: {
+    type: String,
+    minLength: 5,
+    required: true,
+  },
   important: Boolean,
 });
 
 const Note = mongoose.model('Note', noteSchema);
-
-// const note = new Note({
-//   content: 'HTML is Easy',
-//   important: false,
-// });
-
-// note.save().then((result) => {
-//   console.log('note saved!');
-//   mongoose.connection.close();
-// });
 
 Note.find({}).then((result) => {
   result.forEach((note) => {
